@@ -1,4 +1,5 @@
 'use client'
+
 import React, { useState } from 'react';
 import SearchBar from '@/components/SearchBar';
 import ArtistCard from '@/components/ArtistCard';
@@ -57,28 +58,30 @@ export default function SearchPage() {
     }
   };
 
-  console.log('Current searchResults:', searchResults);
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-center mb-8">Search Tattoo Artists</h1>
-      <SearchBar onSearch={handleSearch} />
-      {isLoading && <p className="text-center mt-4">Searching for artists...</p>}
-      {error && <p className="text-center mt-4 text-red-500">{error}</p>}
-      {searchCriteria && !isLoading && !error && (
-        <div className="mt-4 p-4 bg-gray-100 rounded">
-          <h2 className="text-xl font-semibold mb-2">Search Criteria:</h2>
-          <p className="whitespace-pre-wrap">{searchCriteria}</p>
+    <div className="min-h-screen bg-cover bg-center bg-fixed" style={{ backgroundImage: "url('/images/search-background.jpg.png')" }}>
+      <div className="bg-white bg-opacity-10 min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-4xl font-bold text-center mb-8">Search Tattoo Artists</h1>
+          <SearchBar onSearch={handleSearch} />
+          {isLoading && <p className="text-center mt-4">Searching for artists...</p>}
+          {error && <p className="text-center mt-4 text-red-500">{error}</p>}
+          {searchCriteria && !isLoading && !error && (
+            <div className="mt-4 p-4 bg-gray-100 rounded">
+              <h2 className="text-xl font-semibold mb-2">Search Criteria:</h2>
+              <p className="whitespace-pre-wrap">{searchCriteria}</p>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            {searchResults.map((artist, index) => (
+              <ArtistCard key={index} artist={artist} />
+            ))}
+          </div>
+          {searchResults.length === 0 && !isLoading && !error && searchCriteria && (
+            <p className="text-center mt-4">No results found. Try adjusting your search criteria.</p>
+          )}
         </div>
-      )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-        {searchResults.map((artist, index) => (
-          <ArtistCard key={index} artist={artist} />
-        ))}
       </div>
-      {searchResults.length === 0 && !isLoading && !error && searchCriteria && (
-        <p className="text-center mt-4">No results found. Try adjusting your search criteria.</p>
-      )}
     </div>
   );
 }
