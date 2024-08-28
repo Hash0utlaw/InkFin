@@ -60,7 +60,7 @@ export default function AboutUs() {
               <div className="mt-4 flex justify-center space-x-4">
                 {/* Add your social media icons/links here */}
                 <a href="#" className="text-blue-500 hover:text-blue-700">Facebook</a>
-                <a href="#" className="text-blue-400 hover:text-blue-600">Twitter</a>
+                <a href="#" className="text-blue-400 hover:text-blue-600">Discord</a>
                 <a href="#" className="text-pink-500 hover:text-pink-700">Instagram</a>
               </div>
             </section>

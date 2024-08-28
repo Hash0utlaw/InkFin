@@ -43,7 +43,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           placeholder="Search for artists, shops, or styles..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-black dark:bg-gray-700 text-gray-900 dark:text-white"
         />
       </div>
 

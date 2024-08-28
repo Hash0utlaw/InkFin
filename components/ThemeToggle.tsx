@@ -9,18 +9,25 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    console.log('ThemeToggle mounted, current theme:', theme);
+  }, [theme])
 
   if (!mounted) {
     return null
   }
 
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    console.log('Toggling theme to:', newTheme);
+    setTheme(newTheme);
+  }
+
   return (
     <button
       className="p-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white"
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      onClick={toggleTheme}
     >
-      {theme === 'dark' ? '🌞' : '🌙'}
+      {theme === 'dark' ? '🌞' : '🌙'} (Current: {theme})
     </button>
   )
 }

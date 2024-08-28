@@ -11,10 +11,14 @@ export const metadata = {
   description: 'Find your perfect tattoo artist and design',
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: ReactNode
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}>
+      <body className={`${inter.className} bg-white dark:bg-gray-900 text-black dark:text-white`}>
         <Providers>
           <Navigation />
           {children}
