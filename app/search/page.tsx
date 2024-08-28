@@ -1,28 +1,23 @@
 'use client'
 
 import React, { useState } from 'react';
-import SearchBar from '@/components/SearchBar';
-import ArtistCard from '@/components/ArtistCard';
+import SearchBar, { SearchFilters } from '@/components/SearchBar';
+import ArtistCard, { Artist } from '@/components/ArtistCard';
+import ShopCard, { Shop } from '@/components/ShopCard';
 
-interface Artist {
-  name: string;
-  style: string;
-  location: string;
-  priceRange: string;
-  image?: string;
-}
+type SearchResult = Artist | Shop;
 
 export default function SearchPage() {
-  const [searchResults, setSearchResults] = useState<Artist[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchCriteria, setSearchCriteria] = useState<string | null>(null);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (query: string, filters: SearchFilters) => {
     setIsLoading(true);
     setError(null);
     setSearchResults([]);
-    setSearchCriteria(query);
+    setSearchCriteria(`Query: ${query}\nFilters: ${JSON.stringify(filters, null, 2)}`);
 
     try {
       const response = await fetch('/api/search', {
@@ -30,7 +25,7 @@ export default function SearchPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, filters }),
       });
 
       if (!response.ok) {
@@ -38,43 +33,61 @@ export default function SearchPage() {
       }
 
       const data = await response.json();
-      console.log('API response in SearchPage:', data);
+      console.log('Raw API response:', data);
 
-      if (Array.isArray(data.artists)) {
-        setSearchResults(data.artists);
-        console.log('Set search results:', data.artists);
-        if (data.artists.length === 0) {
-          setError('No artists found matching your criteria. Try adjusting your search.');
-        }
+      let results: SearchResult[] = [];
+
+      if (Array.isArray(data)) {
+        results = data;
+      } else if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
+        results = data.results;
       } else {
-        console.error('Unexpected API response format:', data);
-        setError(data.error || 'Received unexpected data format from server.');
+        throw new Error('Unexpected data format');
+      }
+
+      console.log('Processed search results:', results);
+
+      setSearchResults(results);
+      if (results.length === 0) {
+        setError('No results found matching your criteria. Try adjusting your search.');
       }
     } catch (err) {
       console.error('Search error:', err);
-      setError('An error occurred while searching. Please try again.');
+      setError(err instanceof Error ? err.message : 'An error occurred while searching. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const isArtist = (result: SearchResult): result is Artist => {
+    return result.type === 'artist';
+  };
+
+  const isShop = (result: SearchResult): result is Shop => {
+    return result.type === 'shop';
   };
 
   return (
     <div className="min-h-screen bg-cover bg-center bg-fixed" style={{ backgroundImage: "url('/images/search-background.jpg.png')" }}>
       <div className="bg-white bg-opacity-10 min-h-screen">
         <div className="container mx-auto px-4 py-8">
-          <h1 className="text-4xl font-bold text-center mb-8">Search Tattoo Artists</h1>
+          <h1 className="text-4xl font-bold text-center mb-8">Search Tattoo Artists and Shops</h1>
           <SearchBar onSearch={handleSearch} />
-          {isLoading && <p className="text-center mt-4">Searching for artists...</p>}
+          {isLoading && <p className="text-center mt-4">Searching...</p>}
           {error && <p className="text-center mt-4 text-red-500">{error}</p>}
           {searchCriteria && !isLoading && !error && (
             <div className="mt-4 p-4 bg-gray-100 rounded">
               <h2 className="text-xl font-semibold mb-2">Search Criteria:</h2>
-              <p className="whitespace-pre-wrap">{searchCriteria}</p>
+              <pre className="whitespace-pre-wrap">{searchCriteria}</pre>
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-            {searchResults.map((artist, index) => (
-              <ArtistCard key={index} artist={artist} />
+            {searchResults.map((result, index) => (
+              isArtist(result) ? (
+                <ArtistCard key={index} artist={result} />
+              ) : isShop(result) ? (
+                <ShopCard key={index} shop={result} />
+              ) : null
             ))}
           </div>
           {searchResults.length === 0 && !isLoading && !error && searchCriteria && (

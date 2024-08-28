@@ -1,32 +1,35 @@
-import React from 'react';
-import Link from 'next/link';
+'use client'
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
+import { useState, useEffect } from 'react'
+import { useTheme } from 'next-themes'
 
-export default function Layout({ children }: LayoutProps) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const [mounted, setMounted] = useState(false)
+  const { theme, setTheme } = useTheme()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <header className="bg-blue-600 text-white shadow-md">
-        <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold">InkFinder</Link>
-          <ul className="flex space-x-4">
-            <li><Link href="/" className="hover:text-blue-200">Home</Link></li>
-            <li><Link href="/design" className="hover:text-blue-200">Design Tattoo</Link></li>
-          </ul>
-        </nav>
-      </header>
-
-      <main className="flex-grow container mx-auto px-4 py-8">
+    <html lang="en" className={theme}>
+      <body>
+        <button
+          className="fixed top-4 right-4 p-2 rounded-md bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+        </button>
         {children}
-      </main>
-
-      <footer className="bg-gray-800 text-white py-4">
-        <div className="container mx-auto px-4 text-center">
-          © 2024 InkFinder. All rights reserved.
-        </div>
-      </footer>
-    </div>
-  );
+      </body>
+    </html>
+  )
 }

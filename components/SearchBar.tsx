@@ -1,118 +1,99 @@
-import React, { useState } from 'react';
+'use client'
 
-const priceRanges = ['$', '$$', '$$$', '$$$$'];
-const styles = ['Traditional', 'Realism', 'Neo-traditional', 'Watercolor', 'Japanese', 'Blackwork', 'Tribal', 'New School', 'Biomechanical', 'Other'];
+import React, { useState } from 'react'
+
+export interface SearchFilters {
+  type: 'artist' | 'shop' | 'both';
+  priceRange: string;
+  location: string;
+  style: string;
+}
 
 interface SearchBarProps {
-  onSearch: (query: string) => void;
+  onSearch: (query: string, filters: SearchFilters) => Promise<void>;
 }
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
-  const [step, setStep] = useState(1);
-  const [priceRange, setPriceRange] = useState('');
-  const [location, setLocation] = useState('');
-  const [style, setStyle] = useState('');
-  const [additionalInfo, setAdditionalInfo] = useState('');
+  const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState<SearchFilters>({
+    type: 'both',
+    priceRange: '',
+    location: '',
+    style: '',
+  })
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const query = `Find tattoo artists with the following criteria:
-    Price Range: ${priceRange}
-    Location: ${location}
-    Style: ${style}
-    Additional Information: ${additionalInfo}`;
-    onSearch(query);
-  };
-
-  const renderStep = () => {
-    switch (step) {
-      case 1:
-        return (
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Select Price Range:</h3>
-            <div className="flex space-x-2">
-              {priceRanges.map((range) => (
-                <button
-                  key={range}
-                  className={`px-4 py-2 rounded ${priceRange === range ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                  onClick={() => { setPriceRange(range); setStep(2); }}
-                >
-                  {range}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-      case 2:
-        return (
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Enter Location:</h3>
-            <input
-              type="text"
-              value={location}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
-              className="w-full p-2 border rounded"
-              placeholder="City, State or Country"
-            />
-            <button
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
-              onClick={() => setStep(3)}
-            >
-              Next
-            </button>
-          </div>
-        );
-      case 3:
-        return (
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Select Tattoo Style:</h3>
-            <select
-              value={style}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStyle(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              <option value="">Select a style</option>
-              {styles.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <button
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
-              onClick={() => setStep(4)}
-            >
-              Next
-            </button>
-          </div>
-        );
-      case 4:
-        return (
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Additional Information:</h3>
-            <textarea
-              value={additionalInfo}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setAdditionalInfo(e.target.value)}
-              className="w-full p-2 border rounded"
-              placeholder="Any specific details or preferences?"
-              rows={3}
-            />
-            <button
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
-              onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>)}
-            >
-              Search
-            </button>
-          </div>
-        );
-      default:
-        return null;
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    try {
+      await onSearch(query, filters)
+    } catch (error) {
+      console.error('Error searching:', error)
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="mb-4">
-        {renderStep()}
-      </form>
-    </div>
-  );
+    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
+      <div className="mb-4">
+        <input 
+          type="text"
+          placeholder="Search for artists, shops, or styles..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <select
+          value={filters.type}
+          onChange={(e) => setFilters({...filters, type: e.target.value as 'artist' | 'shop' | 'both'})}
+          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        >
+          <option value="both">Artists & Shops</option>
+          <option value="artist">Artists Only</option>
+          <option value="shop">Shops Only</option>
+        </select>
+
+        <input
+          type="text"
+          placeholder="Location"
+          value={filters.location}
+          onChange={(e) => setFilters({...filters, location: e.target.value})}
+          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        />
+
+        <select
+          value={filters.priceRange}
+          onChange={(e) => setFilters({...filters, priceRange: e.target.value})}
+          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        >
+          <option value="">Any Price Range</option>
+          <option value="budget">Budget</option>
+          <option value="mid-range">Mid-Range</option>
+          <option value="high-end">High-End</option>
+          <option value="luxury">Luxury</option>
+        </select>
+
+        <input
+          type="text"
+          placeholder="Style (e.g., Traditional, Realism)"
+          value={filters.style}
+          onChange={(e) => setFilters({...filters, style: e.target.value})}
+          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        />
+      </div>
+
+      <button 
+        type="submit"
+        disabled={isLoading}
+        className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out disabled:bg-blue-300 dark:disabled:bg-blue-800"
+      >
+        {isLoading ? 'Searching...' : 'Search'}
+      </button>
+    </form>
+  )
 }

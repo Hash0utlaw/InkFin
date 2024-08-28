@@ -5,16 +5,9 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class', // or 'media' if you want to use the system preference
   theme: {
-    extend: {
-      colors: {
-        teal: {
-          500: '#38B2AC',
-          600: '#319795',
-          700: '#2C7A7B',
-        },
-      },
-    },
+    extend: {},
   },
   plugins: [],
 }
