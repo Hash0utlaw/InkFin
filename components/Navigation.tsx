@@ -1,8 +1,8 @@
-'use client';
-
-import { useState } from 'react'
-import Link from 'next/link'
-import ThemeToggle from './ThemeToggle'
+'use client'
+import Link from 'next/link';
+import SignOutButton from './SignOutButton';
+import ThemeToggle from './ThemeToggle';
+import { useState } from 'react';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,10 +17,12 @@ export default function Navigation() {
               <li><Link href="/" className="hover:text-gray-600 dark:hover:text-gray-300">Home</Link></li>
               <li><Link href="/search" className="hover:text-gray-600 dark:hover:text-gray-300">Search</Link></li>
               <li><Link href="/design" className="hover:text-gray-600 dark:hover:text-gray-300">Design</Link></li>
+              <li><Link href="/gallery" className="hover:text-gray-600 dark:hover:text-gray-300">Gallery</Link></li>
               <li><Link href="/about" className="hover:text-gray-600 dark:hover:text-gray-300">About Us</Link></li>
               <li><Link href="/signin" className="hover:text-gray-600 dark:hover:text-gray-300">Sign In</Link></li>
               <li><Link href="/signup" className="hover:text-gray-600 dark:hover:text-gray-300">Sign Up</Link></li>
             </ul>
+            <SignOutButton />
             <ThemeToggle />
           </div>
           <div className="md:hidden">
@@ -44,21 +46,17 @@ export default function Navigation() {
       </div>
       {isOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link href="/" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Home</Link>
-            <Link href="/search" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Search</Link>
-            <Link href="/design" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Design</Link>
-            <Link href="/about" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">About Us</Link>
-            <Link href="/signin" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Sign In</Link>
-            <Link href="/signup" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Sign Up</Link>
-          </div>
-          <div className="pt-4 pb-3 border-t border-gray-700">
-            <div className="flex items-center px-5">
-              <ThemeToggle />
-            </div>
-          </div>
+          <Link href="/" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Home</Link>
+          <Link href="/search" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Search</Link>
+          <Link href="/design" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Design</Link>
+          <Link href="/gallery" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Gallery</Link>
+          <Link href="/about" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">About Us</Link>
+          <Link href="/signin" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Sign In</Link>
+          <Link href="/signup" className="block px-3 py-2 rounded-md text-base font-medium hover:text-white hover:bg-gray-700">Sign Up</Link>
+          <SignOutButton />
         </div>
       )}
     </nav>
-  )
+  );
 }
+

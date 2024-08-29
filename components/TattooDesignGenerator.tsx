@@ -17,7 +17,6 @@ function isValidUrl(url: string) {
     new URL(url);
     return true;
   } catch (e) {
-    console.error('URL validation error:', e);
     return false;
   }
 }
@@ -33,7 +32,6 @@ export default function TattooDesignGenerator() {
   useEffect(() => {
     const initSupabase = async () => {
       try {
-        console.log('Checking environment variables...');
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -41,12 +39,6 @@ export default function TattooDesignGenerator() {
           throw new Error('Supabase environment variables are not set');
         }
 
-        console.log('Supabase URL:', supabaseUrl);
-        console.log('URL type:', typeof supabaseUrl);
-        console.log('URL length:', supabaseUrl.length);
-        console.log('API Key (first 5 chars):', supabaseAnonKey.substring(0, 5));
-        console.log('API Key length:', supabaseAnonKey.length);
-        
         if (!isValidUrl(supabaseUrl)) {
           throw new Error(`Invalid Supabase URL: ${supabaseUrl}`);
         }
@@ -55,29 +47,20 @@ export default function TattooDesignGenerator() {
           throw new Error('Supabase API key seems to be invalid or too short');
         }
 
-        console.log('Environment variables are set and seem valid.');
-
-        console.log('Initializing Supabase client...');
         let supabaseClient;
         try {
           supabaseClient = createClientComponentClient<Database>();
         } catch (clientError) {
-          console.error('Error in createClientComponentClient:', clientError);
           throw new Error(`Failed to create Supabase client: ${clientError instanceof Error ? clientError.message : 'Unknown error'}`);
         }
 
-        console.log('Supabase client initialized successfully');
         setSupabase(supabaseClient);
 
-        // Test the connection
         const { data, error } = await supabaseClient.from('saved_designs').select('id').limit(1);
         if (error) {
           throw new Error(`Failed to connect to Supabase: ${error.message}`);
         }
-        console.log('Successfully connected to Supabase');
-
       } catch (error) {
-        console.error('Error in initSupabase:', error);
         setError(`Failed to initialize application. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     };
@@ -117,7 +100,6 @@ export default function TattooDesignGenerator() {
         setError('No image was generated. Please try again.');
       }
     } catch (error) {
-      console.error('Error generating tattoo design:', error);
       setError('Failed to generate design. Please try again.');
     } finally {
       setIsLoading(false);
@@ -160,7 +142,6 @@ export default function TattooDesignGenerator() {
       if (error) throw error;
       alert('Design saved successfully!');
     } catch (error) {
-      console.error('Error saving design:', error);
       alert('Failed to save design. Please try again.');
     }
   };
@@ -185,7 +166,6 @@ export default function TattooDesignGenerator() {
         throw new Error('Failed to get shared design data');
       }
     } catch (error) {
-      console.error('Error sharing design:', error);
       alert('Failed to share design. Please try again.');
     }
   };
