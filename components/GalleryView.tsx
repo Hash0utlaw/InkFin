@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Image from 'next/image';
@@ -5,15 +7,17 @@ import Link from 'next/link';
 import type { Database } from '@/lib/database.types';
 
 interface SavedDesign {
-  id: string;  // Changed to string for UUID
+  id: string;
   user_id: string;
   prompt: string;
-  design: string;
+  image_path?: string;
+  image_url?: string;
   created_at: string;
 }
 
 export default function GalleryView() {
   const [designs, setDesigns] = useState<SavedDesign[]>([]);
+  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClientComponentClient<Database>();
@@ -40,11 +44,36 @@ export default function GalleryView() {
 
       if (error) throw error;
       setDesigns(data || []);
+
+      // Fetch signed URLs for all designs
+      const urls: { [key: string]: string } = {};
+      for (const design of data || []) {
+        const imagePath = design.image_path || design.image_url;
+        if (imagePath) {
+          const signedUrl = await fetchSignedUrl(imagePath);
+          urls[design.id] = signedUrl;
+        }
+      }
+      setSignedUrls(urls);
     } catch (err) {
       setError('Failed to fetch saved designs');
       console.error('Error fetching saved designs:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSignedUrl = async (imagePath: string): Promise<string> => {
+    try {
+      const response = await fetch(`/api/get-signed-url?path=${encodeURIComponent(imagePath)}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch signed URL');
+      }
+      const data = await response.json();
+      return data.signedUrl;
+    } catch (error) {
+      console.error('Error fetching signed URL:', error);
+      return '';
     }
   };
 
@@ -59,12 +88,14 @@ export default function GalleryView() {
           <Link href={`/gallery/${design.id}`} key={design.id}>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-105">
               <div className="relative h-48">
-                <Image 
-                  src={design.design}
-                  alt={design.prompt}
-                  layout="fill"
-                  objectFit="cover"
-                />
+                {signedUrls[design.id] && (
+                  <Image 
+                    src={signedUrls[design.id]}
+                    alt={design.prompt}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                )}
               </div>
               <div className="p-4">
                 <p className="text-sm text-gray-600 dark:text-gray-300 truncate">{design.prompt}</p>

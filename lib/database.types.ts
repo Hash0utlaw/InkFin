@@ -1,5 +1,3 @@
-// lib/database.types.ts
-
 export type Json =
   | string
   | number
@@ -16,21 +14,24 @@ export interface Database {
           id: string
           user_id: string
           prompt: string
-          design: string
+          image_path?: string
+          image_url?: string
           created_at: string
         }
         Insert: {
-          id?: number
+          id?: string
           user_id: string
           prompt: string
-          design: string
+          image_path?: string
+          image_url?: string
           created_at?: string
         }
         Update: {
-          id?: number
+          id?: string
           user_id?: string
           prompt?: string
-          design?: string
+          image_path?: string
+          image_url?: string
           created_at?: string
         }
       }
