@@ -130,19 +130,39 @@ export default function TattooDesignGenerator() {
   };
 
   const saveDesign = async (userId: string) => {
-    if (!generatedImage || !supabase) return;
+    if (!generatedImage || !supabase) {
+      console.error('Cannot save design: generatedImage or supabase is null');
+      return;
+    }
 
     try {
-      const { error } = await supabase
-        .from('saved_designs')
-        .insert([
-          { user_id: userId, prompt, design: generatedImage.imageUrl }
-        ]);
+      // Call the server-side API to handle image fetching and uploading
+      const response = await fetch('/api/save-design', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          prompt,
+          imageUrl: generatedImage.imageUrl
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      console.log('Design saved successfully:', result);
       alert('Design saved successfully!');
     } catch (error) {
-      alert('Failed to save design. Please try again.');
+      console.error('Error saving design:', error);
+      alert(`Failed to save design. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -166,7 +186,8 @@ export default function TattooDesignGenerator() {
         throw new Error('Failed to get shared design data');
       }
     } catch (error) {
-      alert('Failed to share design. Please try again.');
+      console.error('Error sharing design:', error);
+      alert(`Failed to share design. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

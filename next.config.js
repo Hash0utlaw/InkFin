@@ -10,9 +10,25 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'jydcuvcblladwpbqzsyo.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
         hostname: 'oaidalleapiprodscus.blob.core.windows.net',
         port: '',
         pathname: '/private/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'jydcuvcblladwpbqzsyo.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
       },
     ],
   },

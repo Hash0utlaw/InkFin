@@ -5,7 +5,8 @@ import Link from 'next/link';
 import type { Database } from '@/lib/database.types';
 
 interface SavedDesign {
-  id: number;
+  id: string;  // Changed to string for UUID
+  user_id: string;
   prompt: string;
   design: string;
   created_at: string;
@@ -51,31 +52,34 @@ export default function GalleryView() {
   if (error) return <div className="text-center text-red-500">{error}</div>;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {designs.map((design) => (
-        <Link href={`/gallery/${design.id}`} key={design.id}>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-            <div className="relative h-48">
-              <Image 
-                src={design.design}
-                alt={design.prompt}
-                layout="fill"
-                objectFit="cover"
-              />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6 text-center">Your Tattoo Design Gallery</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {designs.map((design) => (
+          <Link href={`/gallery/${design.id}`} key={design.id}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-105">
+              <div className="relative h-48">
+                <Image 
+                  src={design.design}
+                  alt={design.prompt}
+                  layout="fill"
+                  objectFit="cover"
+                />
+              </div>
+              <div className="p-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300 truncate">{design.prompt}</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  {new Date(design.created_at).toLocaleDateString()}
+                </p>
+              </div>
             </div>
-            <div className="p-4">
-              <p className="text-sm text-gray-600 dark:text-gray-300 truncate">{design.prompt}</p>
-              <p className="text-xs text-gray-500 mt-2">
-                {new Date(design.created_at).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-        </Link>
-      ))}
+          </Link>
+        ))}
+      </div>
       {designs.length === 0 && (
-        <div className="col-span-full text-center">
-          <p>You haven't saved any designs yet. Start by generating a design!</p>
-          <Link href="/design" className="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded">
+        <div className="text-center mt-8">
+          <p className="text-lg mb-4">You haven't saved any designs yet. Start by generating a design!</p>
+          <Link href="/design" className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition duration-300">
             Create a Design
           </Link>
         </div>

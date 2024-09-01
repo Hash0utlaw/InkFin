@@ -13,7 +13,7 @@ export interface Database {
     Tables: {
       saved_designs: {
         Row: {
-          id: number
+          id: string
           user_id: string
           prompt: string
           design: string
