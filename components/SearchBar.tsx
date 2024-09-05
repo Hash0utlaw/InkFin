@@ -1,5 +1,4 @@
-'use client'
-
+// components/SearchBar.tsx
 import React, { useState } from 'react'
 
 export interface SearchFilters {
@@ -7,6 +6,7 @@ export interface SearchFilters {
   priceRange: string;
   location: string;
   style: string;
+  yearsOfExperience: string;
 }
 
 interface SearchBarProps {
@@ -20,6 +20,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     priceRange: '',
     location: '',
     style: '',
+    yearsOfExperience: '',
   })
   const [isLoading, setIsLoading] = useState(false)
 
@@ -43,11 +44,11 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           placeholder="Search for artists, shops, or styles..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-black dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <select
           value={filters.type}
           onChange={(e) => setFilters({...filters, type: e.target.value as 'artist' | 'shop' | 'both'})}
@@ -85,6 +86,18 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           onChange={(e) => setFilters({...filters, style: e.target.value})}
           className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
+
+        <select
+          value={filters.yearsOfExperience}
+          onChange={(e) => setFilters({...filters, yearsOfExperience: e.target.value})}
+          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        >
+          <option value="">Any Experience Level</option>
+          <option value="0-2">0-2 years</option>
+          <option value="3-5">3-5 years</option>
+          <option value="5-10">5-10 years</option>
+          <option value="10+">10+ years</option>
+        </select>
       </div>
 
       <button 
