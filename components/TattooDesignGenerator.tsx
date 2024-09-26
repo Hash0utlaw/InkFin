@@ -1,15 +1,26 @@
 'use client'
+// components/TattooDesignGenerator.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { Database } from '@/lib/database.types';
 import { SupabaseClient } from '@supabase/supabase-js';
+import DesignModifier from './DesignModifier';
+import ErrorMessage from './ErrorMessage';
+import TattooLoadingAnimation from './TattooLoadingAnimation';
 
 interface DesignResult {
   imageUrl: string;
   error?: string;
+}
+
+interface DesignOptions {
+  style: string;
+  size: string;
+  colorScheme: string;
+  placement: string;
 }
 
 function isValidUrl(url: string) {
@@ -23,10 +34,20 @@ function isValidUrl(url: string) {
 
 export default function TattooDesignGenerator() {
   const [prompt, setPrompt] = useState('');
+  const [designOptions, setDesignOptions] = useState<DesignOptions>({
+    style: '',
+    size: '',
+    colorScheme: '',
+    placement: '',
+  });
   const [generatedImage, setGeneratedImage] = useState<DesignResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supabase, setSupabase] = useState<SupabaseClient<Database> | null>(null);
+  const [referenceImage, setReferenceImage] = useState<File | null>(null);
+  const [customColors, setCustomColors] = useState<string[]>([]);
+  const [isServiceDown, setIsServiceDown] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -68,6 +89,16 @@ export default function TattooDesignGenerator() {
     initSupabase();
   }, []);
 
+  const handleOptionChange = (option: keyof DesignOptions, value: string) => {
+    setDesignOptions(prev => ({ ...prev, [option]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setReferenceImage(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!supabase) {
@@ -77,33 +108,55 @@ export default function TattooDesignGenerator() {
     setIsLoading(true);
     setGeneratedImage(null);
     setError(null);
+    setIsServiceDown(false);
+
+    const formData = new FormData();
+    formData.append('prompt', prompt);
+    formData.append('options', JSON.stringify(designOptions));
+    if (referenceImage) {
+      formData.append('referenceImage', referenceImage);
+    }
 
     try {
       const response = await fetch('/api/generate-design', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt }),
+        body: formData,
       });
 
       if (!response.ok) {
+        if (response.status === 504) {
+          throw new Error('The design generation service is currently unavailable. Please try again later.');
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result: DesignResult = await response.json();
       if (result.error) {
-        setError(result.error);
+        throw new Error(result.error);
       } else if (result.imageUrl) {
         setGeneratedImage(result);
       } else {
-        setError('No image was generated. Please try again.');
+        throw new Error('No image was generated. Please try again.');
       }
     } catch (error) {
-      setError('Failed to generate design. Please try again.');
+      console.error('Error generating design:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('service is currently unavailable')) {
+          setIsServiceDown(true);
+        }
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setIsServiceDown(false);
+    handleSubmit(new Event('submit') as any);
   };
 
   const handleSaveOrShare = async (action: 'save' | 'share') => {
@@ -136,7 +189,6 @@ export default function TattooDesignGenerator() {
     }
 
     try {
-      // Call the server-side API to handle image fetching and uploading
       const response = await fetch('/api/save-design', {
         method: 'POST',
         headers: {
@@ -145,7 +197,9 @@ export default function TattooDesignGenerator() {
         body: JSON.stringify({
           userId,
           prompt,
-          imageUrl: generatedImage.imageUrl
+          imageUrl: generatedImage.imageUrl,
+          options: designOptions,
+          customColors
         }),
       });
 
@@ -173,7 +227,7 @@ export default function TattooDesignGenerator() {
       const { data, error } = await supabase
         .from('shared_designs')
         .insert([
-          { user_id: userId, prompt, design: generatedImage.imageUrl }
+          { user_id: userId, prompt, design: generatedImage.imageUrl, options: designOptions, custom_colors: customColors }
         ])
         .select();
 
@@ -191,21 +245,60 @@ export default function TattooDesignGenerator() {
     }
   };
 
+  const handleModifyDesign = async (colors: string[], style: string) => {
+    if (!generatedImage) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/modify-design', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageUrl: generatedImage.imageUrl,
+          colors,
+          style,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: DesignResult = await response.json();
+      if (result.error) {
+        setError(result.error);
+      } else if (result.imageUrl) {
+        setGeneratedImage(result);
+        setCustomColors(colors);
+        setDesignOptions(prev => ({ ...prev, style }));
+      } else {
+        setError('Failed to modify design. Please try again.');
+      }
+    } catch (error) {
+      setError('Failed to modify design. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-      {error ? (
-        <div>
-          <p className="text-red-500 dark:text-red-400 text-center">{error}</p>
-          <p className="text-gray-600 dark:text-gray-400 text-center mt-2">
-            NEXT_PUBLIC_SUPABASE_URL: {process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Not set'}
-          </p>
-          <p className="text-gray-600 dark:text-gray-400 text-center">
-            NEXT_PUBLIC_SUPABASE_ANON_KEY: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Not set'}
-          </p>
-        </div>
+      {isServiceDown ? (
+        <ErrorMessage 
+          message="The design generation service is currently down. We apologize for the inconvenience. Please try again later."
+        />
+      ) : error ? (
+        <ErrorMessage 
+          message={error}
+          onRetry={handleRetry}
+        />
       ) : (
         <>
-          <form onSubmit={handleSubmit} className="mb-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <textarea
               className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               rows={4}
@@ -213,16 +306,79 @@ export default function TattooDesignGenerator() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
             />
+            <select
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md"
+              value={designOptions.style}
+              onChange={(e) => handleOptionChange('style', e.target.value)}
+            >
+              <option value="">Select Style</option>
+              <option value="Traditional">Traditional</option>
+              <option value="Realistic">Realistic</option>
+              <option value="Watercolor">Watercolor</option>
+              <option value="Geometric">Geometric</option>
+              <option value="Minimalist">Minimalist</option>
+            </select>
+            <select
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md"
+              value={designOptions.size}
+              onChange={(e) => handleOptionChange('size', e.target.value)}
+            >
+              <option value="">Select Size</option>
+              <option value="Small">Small</option>
+              <option value="Medium">Medium</option>
+              <option value="Large">Large</option>
+            </select>
+            <select
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md"
+              value={designOptions.colorScheme}
+              onChange={(e) => handleOptionChange('colorScheme', e.target.value)}
+            >
+              <option value="">Select Color Scheme</option>
+              <option value="Black and Gray">Black and Gray</option>
+              <option value="Full Color">Full Color</option>
+              <option value="Pastel">Pastel</option>
+            </select>
+            <select
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md"
+              value={designOptions.placement}
+              onChange={(e) => handleOptionChange('placement', e.target.value)}
+            >
+              <option value="">Select Placement</option>
+              <option value="Arm">Arm</option>
+              <option value="Leg">Leg</option>
+              <option value="Back">Back</option>
+              <option value="Chest">Chest</option>
+            </select>
+            <div className="mb-4">
+              <label htmlFor="referenceImage" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Upload Reference Image (optional)
+              </label>
+              <input
+                type="file"
+                id="referenceImage"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="mt-1 block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-violet-50 file:text-violet-700
+                  hover:file:bg-violet-100"
+              />
+            </div>
             <button 
               type="submit" 
-              className="mt-4 w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out disabled:bg-blue-300 dark:disabled:bg-blue-800"
+              className="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out disabled:bg-blue-300 dark:disabled:bg-blue-800"
               disabled={isLoading}
             >
               {isLoading ? 'Generating Your Design...' : 'Generate Tattoo Design'}
             </button>
           </form>
-          {generatedImage && generatedImage.imageUrl && (
-            <div className="text-center">
+          {isLoading ? (
+            <TattooLoadingAnimation />
+          ) : generatedImage && generatedImage.imageUrl ? (
+            <div className="text-center mt-6">
               <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Your Generated Design:</h3>
               <div className="relative w-full h-64 md:h-96">
                 <Image 
@@ -250,8 +406,9 @@ export default function TattooDesignGenerator() {
                   Share Design
                 </button>
               </div>
+              <DesignModifier onModifyDesign={handleModifyDesign} />
             </div>
-          )}
+          ) : null}
         </>
       )}
     </div>

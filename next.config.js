@@ -20,6 +20,12 @@ const nextConfig = {
         port: '',
         pathname: '/private/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'replicate.delivery',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 }
