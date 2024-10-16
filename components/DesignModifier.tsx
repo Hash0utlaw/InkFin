@@ -56,18 +56,6 @@ export default function DesignModifier({ onModifyDesign }: DesignModifierProps) 
         </select>
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Color Palette</label>
-        <div className="flex space-x-2 mt-1">
-          {colors.map((color, index) => (
-            <input
-              key={index}
-              type="color"
-              value={color}
-              onChange={(e) => handleColorChange(index, e.target.value)}
-              className="w-10 h-10 cursor-pointer"
-            />
-          ))}
-        </div>
       </div>
       <button
         onClick={handleModify}

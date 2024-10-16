@@ -1,112 +1,142 @@
-// components/SearchBar.tsx
-import React, { useState } from 'react'
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { Search, MapPin, ChevronDown } from 'lucide-react'
 
 export interface SearchFilters {
-  type: 'artist' | 'shop' | 'both';
-  priceRange: string;
-  location: string;
-  style: string;
-  yearsOfExperience: string;
+  style: string
+  priceRange: string
+  type: 'artist' | 'shop' | 'both'
 }
 
 interface SearchBarProps {
-  onSearch: (query: string, filters: SearchFilters) => Promise<void>;
+  onSearch: (query: string, filters: SearchFilters, location: string) => Promise<void>
 }
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState<SearchFilters>({
-    type: 'both',
-    priceRange: '',
-    location: '',
     style: '',
-    yearsOfExperience: '',
+    priceRange: '',
+    type: 'both'
   })
-  const [isLoading, setIsLoading] = useState(false)
+  const [location, setLocation] = useState('')
+  const [useCurrentLocation, setUseCurrentLocation] = useState(false)
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
-    try {
-      await onSearch(query, filters)
-    } catch (error) {
-      console.error('Error searching:', error)
-    } finally {
-      setIsLoading(false)
+  useEffect(() => {
+    if (useCurrentLocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          setLocation(`${latitude},${longitude}`)
+        },
+        (error) => {
+          console.error("Error getting location:", error)
+          setUseCurrentLocation(false)
+        }
+      )
     }
+  }, [useCurrentLocation])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSearch(query, filters, location)
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-      <div className="mb-4">
-        <input 
-          type="text"
-          placeholder="Search for artists, shops, or styles..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        />
+    <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-grow relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            id="search-query"
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search for artists, styles, or shops"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+          />
+        </div>
+        <div className="relative">
+          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            id="location-input"
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Enter location"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+            disabled={useCurrentLocation}
+          />
+        </div>
+        <button type="submit" className="bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-600 transition-colors duration-300">
+          Search
+        </button>
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <label className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
+          <input
+            type="checkbox"
+            checked={useCurrentLocation}
+            onChange={() => setUseCurrentLocation(!useCurrentLocation)}
+            className="form-checkbox h-4 w-4 text-primary-500 rounded focus:ring-2 focus:ring-primary-500"
+          />
+          <span>Use my current location</span>
+        </label>
+        <button
+          type="button"
+          onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+          className="text-sm text-primary-500 hover:text-primary-600 flex items-center focus:outline-none focus:underline"
+        >
+          Advanced filters
+          <ChevronDown className={`ml-1 transform transition-transform duration-200 ${isAdvancedOpen ? 'rotate-180' : ''}`} />
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-        <select
-          value={filters.type}
-          onChange={(e) => setFilters({...filters, type: e.target.value as 'artist' | 'shop' | 'both'})}
-          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        >
-          <option value="both">Artists & Shops</option>
-          <option value="artist">Artists Only</option>
-          <option value="shop">Shops Only</option>
-        </select>
-
-        <input
-          type="text"
-          placeholder="Location"
-          value={filters.location}
-          onChange={(e) => setFilters({...filters, location: e.target.value})}
-          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        />
-
-        <select
-          value={filters.priceRange}
-          onChange={(e) => setFilters({...filters, priceRange: e.target.value})}
-          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        >
-          <option value="">Any Price Range</option>
-          <option value="budget">Budget</option>
-          <option value="mid-range">Mid-Range</option>
-          <option value="high-end">High-End</option>
-          <option value="luxury">Luxury</option>
-        </select>
-
-        <input
-          type="text"
-          placeholder="Style (e.g., Traditional, Realism)"
-          value={filters.style}
-          onChange={(e) => setFilters({...filters, style: e.target.value})}
-          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        />
-
-        <select
-          value={filters.yearsOfExperience}
-          onChange={(e) => setFilters({...filters, yearsOfExperience: e.target.value})}
-          className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-        >
-          <option value="">Any Experience Level</option>
-          <option value="0-2">0-2 years</option>
-          <option value="3-5">3-5 years</option>
-          <option value="5-10">5-10 years</option>
-          <option value="10+">10+ years</option>
-        </select>
-      </div>
-
-      <button 
-        type="submit"
-        disabled={isLoading}
-        className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out disabled:bg-blue-300 dark:disabled:bg-blue-800"
-      >
-        {isLoading ? 'Searching...' : 'Search'}
-      </button>
+      {isAdvancedOpen && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <select
+            id="style-select"
+            value={filters.style}
+            onChange={(e) => setFilters({...filters, style: e.target.value})}
+            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+            aria-label="Select tattoo style"
+          >
+            <option value="">Select Style</option>
+            <option value="Traditional">Traditional</option>
+            <option value="Realism">Realism</option>
+            <option value="Watercolor">Watercolor</option>
+            <option value="Blackwork">Blackwork</option>
+            <option value="New School">New School</option>
+            <option value="Neo-Traditional">Neo-Traditional</option>
+          </select>
+          <select
+            id="price-range-select"
+            value={filters.priceRange}
+            onChange={(e) => setFilters({...filters, priceRange: e.target.value})}
+            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+            aria-label="Select price range"
+          >
+            <option value="">Select Price Range</option>
+            <option value="Budget">Budget</option>
+            <option value="Mid-range">Mid-range</option>
+            <option value="High-end">High-end</option>
+          </select>
+          <select
+            id="type-select"
+            value={filters.type}
+            onChange={(e) => setFilters({...filters, type: e.target.value as 'artist' | 'shop' | 'both'})}
+            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+            aria-label="Select search type"
+          >
+            <option value="both">Artists & Shops</option>
+            <option value="artist">Artists Only</option>
+            <option value="shop">Shops Only</option>
+          </select>
+        </div>
+      )}
     </form>
   )
 }

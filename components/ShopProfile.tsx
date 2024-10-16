@@ -1,17 +1,34 @@
-// components/ShopProfile.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { Database } from '@/lib/database.types';
+import ShopForm from './ShopForm';
 
 type Shop = Database['public']['Tables']['shops']['Row'];
 
 interface ShopProfileProps {
   shop: Shop;
   isEditable?: boolean;
-  onEdit?: () => void;
+  onSave?: (data: Partial<Shop>) => void;
 }
 
-export default function ShopProfile({ shop, isEditable = false, onEdit }: ShopProfileProps) {
+export default function ShopProfile({ shop, isEditable = false, onSave }: ShopProfileProps) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = (data: Partial<Shop>) => {
+    if (onSave) {
+      onSave(data);
+    }
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return <ShopForm initialData={shop} onSubmit={handleSave} />;
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
       <div className="p-6">
@@ -19,7 +36,7 @@ export default function ShopProfile({ shop, isEditable = false, onEdit }: ShopPr
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{shop.name}</h1>
           {isEditable && (
             <button
-              onClick={onEdit}
+              onClick={handleEdit}
               className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
             >
               Edit Shop

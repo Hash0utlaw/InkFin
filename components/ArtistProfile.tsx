@@ -1,17 +1,34 @@
-// components/ArtistProfile.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { Database } from '@/lib/database.types';
+import ArtistForm from './ArtistForm';
 
 type Artist = Database['public']['Tables']['artists']['Row'];
 
 interface ArtistProfileProps {
   artist: Artist;
   isEditable?: boolean;
-  onEdit?: () => void;
+  onSave?: (data: Partial<Artist>) => void;
 }
 
-export default function ArtistProfile({ artist, isEditable = false, onEdit }: ArtistProfileProps) {
+export default function ArtistProfile({ artist, isEditable = false, onSave }: ArtistProfileProps) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = (data: Partial<Artist>) => {
+    if (onSave) {
+      onSave(data);
+    }
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return <ArtistForm initialData={artist} onSubmit={handleSave} />;
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
       <div className="p-6">
@@ -19,7 +36,7 @@ export default function ArtistProfile({ artist, isEditable = false, onEdit }: Ar
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{artist.name}</h1>
           {isEditable && (
             <button
-              onClick={onEdit}
+              onClick={handleEdit}
               className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
             >
               Edit Profile

@@ -1,5 +1,3 @@
-// lib/database.types.ts
-
 export type Json =
   | string
   | number
@@ -171,12 +169,62 @@ export interface Database {
           created_at?: string;
         }
       }
+      business_data: {
+        Row: {
+          id: string
+          Name: string
+          Address: string
+          Phone: string | null
+          Website: string | null
+          Email: string | null
+          Rating: number | null
+          Reviews: number | null
+          Types: string
+          State: string
+          latitude: number | null
+          longitude: number | null
+        }
+        Insert: {
+          id?: string
+          Name: string
+          Address: string
+          Phone?: string | null
+          Website?: string | null
+          Email?: string | null
+          Rating?: number | null
+          Reviews?: number | null
+          Types: string
+          State: string
+          latitude?: number | null
+          longitude?: number | null
+        }
+        Update: {
+          id?: string
+          Name?: string
+          Address?: string
+          Phone?: string | null
+          Website?: string | null
+          Email?: string | null
+          Rating?: number | null
+          Reviews?: number | null
+          Types?: string
+          State?: string
+          latitude?: number | null
+          longitude?: number | null
+        }
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      st_distance: (
+        geog1: unknown,
+        geog2: unknown,
+        use_spheroid?: boolean
+      ) => number
+      st_setsrid: (geom: unknown, srid: number) => unknown
+      st_makepoint: (x: number, y: number) => unknown
     }
     Enums: {
       [_ in never]: never
