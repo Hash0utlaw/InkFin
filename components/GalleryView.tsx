@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -37,11 +37,7 @@ export default function GalleryView() {
     ["hsl(0, 0%, 100%)", "hsl(0, 0%, 95%)"]
   )
 
-  useEffect(() => {
-    fetchSavedDesigns()
-  }, [])
-
-  const fetchSavedDesigns = async () => {
+  const fetchSavedDesigns = useCallback(async () => {
     try {
       setLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
@@ -75,7 +71,11 @@ export default function GalleryView() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    fetchSavedDesigns()
+  }, [fetchSavedDesigns])
 
   const fetchSignedUrl = async (imagePath: string): Promise<string> => {
     try {

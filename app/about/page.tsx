@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 import { motion, useScroll, useTransform, Variants } from 'framer-motion'
 import { Palette, Users, Zap, Heart } from 'lucide-react'
 
@@ -40,13 +41,13 @@ export default function AboutPage() {
               className="text-xl mb-6 leading-relaxed"
               variants={fadeInUp}
             >
-              InkFinder is revolutionizing the way people discover and create tattoos. Our platform combines cutting-edge AI technology with a passion for artistic expression, making it easier than ever to bring your tattoo ideas to life.
+              InkFinder isn&apos;t just a tattoo design app; it&apos;s a gateway to self-expression and creativity. Our platform combines cutting-edge AI technology with a passion for artistic expression, making it easier than ever to bring your tattoo ideas to life.
             </motion.p>
             <motion.p 
               className="text-xl mb-6 leading-relaxed"
               variants={fadeInUp}
             >
-              Whether you're a first-time tattoo enthusiast or a seasoned collector, InkFinder provides the tools and inspiration you need to find your perfect design.
+              Whether you&apos;re a first-time tattoo enthusiast or a seasoned collector, InkFinder provides the tools and inspiration you need to find your perfect design.
             </motion.p>
           </div>
           <motion.div 
@@ -56,10 +57,11 @@ export default function AboutPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             style={{ scale }}
           >
-            <img 
+            <Image 
               src="/images/about-image.jpg" 
               alt="Tattoo artist at work" 
-              className="absolute inset-0 w-full h-full object-cover"
+              layout="fill"
+              objectFit="cover"
             />
           </motion.div>
         </motion.div>
@@ -129,7 +131,7 @@ export default function AboutPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
           >
-            Be part of a community that's redefining the future of tattoo art.
+            Be part of a community that&apos;s redefining the future of tattoo art.
           </motion.p>
           <motion.button 
             className="bg-gradient-to-r from-red-600 to-yellow-500 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg hover:shadow-xl transition duration-300"

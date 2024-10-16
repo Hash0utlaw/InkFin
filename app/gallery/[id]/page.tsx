@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -13,10 +13,6 @@ export default function GalleryItemPage({ params }: { params: { id: string } }) 
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClientComponentClient<Database>();
-
-  useEffect(() => {
-    fetchDesign();
-  }, [params.id]);
 
   const fetchSignedUrl = async (imagePath: string): Promise<string> => {
     try {
@@ -32,7 +28,7 @@ export default function GalleryItemPage({ params }: { params: { id: string } }) 
     }
   };
 
-  const fetchDesign = async () => {
+  const fetchDesign = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -57,7 +53,11 @@ export default function GalleryItemPage({ params }: { params: { id: string } }) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id, supabase]);
+
+  useEffect(() => {
+    fetchDesign();
+  }, [fetchDesign]);
 
   if (loading) return <div className="text-center">Loading design...</div>;
   if (error) return <div className="text-center text-red-500">{error}</div>;
