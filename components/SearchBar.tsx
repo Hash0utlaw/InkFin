@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Search, MapPin, ChevronDown } from 'lucide-react'
+import { Search, MapPin, ChevronDown, Loader } from 'lucide-react'
 
 export interface SearchFilters {
   style: string
@@ -11,9 +11,10 @@ export interface SearchFilters {
 
 interface SearchBarProps {
   onSearch: (query: string, filters: SearchFilters, location: string) => Promise<void>
+  onError: (error: string) => void
 }
 
-export default function SearchBar({ onSearch }: SearchBarProps) {
+export default function SearchBar({ onSearch, onError }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState<SearchFilters>({
     style: '',
@@ -23,6 +24,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const [location, setLocation] = useState('')
   const [useCurrentLocation, setUseCurrentLocation] = useState(false)
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if (useCurrentLocation) {
@@ -33,15 +35,24 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         },
         (error) => {
           console.error("Error getting location:", error)
+          onError("Failed to get current location. Please enter location manually.")
           setUseCurrentLocation(false)
         }
       )
     }
-  }, [useCurrentLocation])
+  }, [useCurrentLocation, onError])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSearch(query, filters, location)
+    setIsLoading(true)
+    try {
+      await onSearch(query, filters, location)
+    } catch (error) {
+      console.error("Search error:", error)
+      onError("An error occurred while searching. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -70,8 +81,12 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             disabled={useCurrentLocation}
           />
         </div>
-        <button type="submit" className="bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-600 transition-colors duration-300">
-          Search
+        <button 
+          type="submit" 
+          className="bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-600 transition-colors duration-300 flex items-center justify-center"
+          disabled={isLoading}
+        >
+          {isLoading ? <Loader className="animate-spin" /> : 'Search'}
         </button>
       </div>
       

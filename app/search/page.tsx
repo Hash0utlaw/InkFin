@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import SearchBar, { SearchFilters } from '@/components/SearchBar'
 import ArtistCard, { Artist } from '@/components/ArtistCard'
 import ShopCard, { Shop } from '@/components/ShopCard'
@@ -21,7 +21,7 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchCriteria, setSearchCriteria] = useState<string | null>(null)
 
-  const handleSearch = async (query: string, filters: SearchFilters, location: string) => {
+  const handleSearch = useCallback(async (query: string, filters: SearchFilters, location: string) => {
     setIsLoading(true)
     setError(null)
     setSearchResults(null)
@@ -54,45 +54,45 @@ export default function SearchPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const isArtist = (result: BusinessData | any): boolean => {
+  const isArtist = useCallback((result: BusinessData | any): boolean => {
     return (
       (result.Types?.toLowerCase().includes('artist') || 
       result.Types?.toLowerCase().includes('tattoo') || 
       result.Types?.toLowerCase().includes('piercing') ||
       result.type?.toLowerCase() === 'artist') ?? false
     )
-  }
+  }, [])
 
-  const isShop = (result: BusinessData | any): boolean => {
+  const isShop = useCallback((result: BusinessData | any): boolean => {
     return (
       (result.Types?.toLowerCase().includes('shop') || 
       result.Types?.toLowerCase().includes('store') ||
       result.Types?.toLowerCase().includes('studio') ||
       result.type?.toLowerCase() === 'shop') ?? false
     )
-  }
+  }, [])
 
-  const mapToArtist = (data: BusinessData | any): Artist => ({
+  const mapToArtist = useCallback((data: BusinessData | any): Artist => ({
     name: data.Name || data.name,
     type: 'artist',
     location: data.Address || data.location,
     priceRange: data.Rating ? `${data.Rating.toFixed(1)}/5` : (data.priceRange || 'N/A'),
     image: '/images/placeholder-artist.jpg.png',
     style: data.Types || data.style || 'Unknown',
-  })
+  }), [])
 
-  const mapToShop = (data: BusinessData | any): Shop => ({
+  const mapToShop = useCallback((data: BusinessData | any): Shop => ({
     name: data.Name || data.name,
     type: 'shop',
     location: data.Address || data.location,
     priceRange: data.Rating ? `${data.Rating.toFixed(1)}/5` : (data.priceRange || 'N/A'),
     image: '/images/placeholder-artist.jpg.png',
     style: data.Types || data.style || 'Unknown',
-  })
+  }), [])
 
-  const renderResults = (results: BusinessData[] | any[]) => {
+  const renderResults = useCallback((results: BusinessData[] | any[]) => {
     return results.map((result, index) => {
       console.log('Processing result:', result)
       try {
@@ -113,7 +113,7 @@ export default function SearchPage() {
         return null
       }
     })
-  }
+  }, [isArtist, isShop, mapToArtist, mapToShop])
 
   const titleWords = "Search Tattoo Artists and Shops".split(" ")
 
@@ -163,65 +163,67 @@ export default function SearchPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <SearchBar onSearch={handleSearch} />
+            <SearchBar onSearch={handleSearch} onError={setError} />
           </motion.div>
-          {isLoading && (
-            <motion.div 
-              className="flex justify-center mt-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Loader2 className="w-8 h-8 text-white animate-spin" />
-            </motion.div>
-          )}
-          {error && (
-            <motion.p 
-              className="text-center mt-4 text-red-500 bg-white bg-opacity-80 p-4 rounded-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {error}
-            </motion.p>
-          )}
-          {searchCriteria && !isLoading && !error && (
-            <motion.div 
-              className="mt-4 p-4 bg-white bg-opacity-80 rounded-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-xl font-semibold mb-2">Search Criteria:</h2>
-              <pre className="whitespace-pre-wrap">{searchCriteria}</pre>
-            </motion.div>
-          )}
-          {searchResults && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <h2 className="text-2xl font-bold mt-8 mb-4 text-white">Supabase Results</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {renderResults(searchResults.dbResults)}
-              </div>
-              <h2 className="text-2xl font-bold mt-8 mb-4 text-white">OpenAI Results</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {renderResults(searchResults.aiResults)}
-              </div>
-            </motion.div>
-          )}
-          {searchResults && searchResults.dbResults.length === 0 && searchResults.aiResults.length === 0 && !isLoading && !error && (
-            <motion.p 
-              className="text-center mt-4 text-white bg-black bg-opacity-50 p-4 rounded-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              No results found. Try adjusting your search criteria.
-            </motion.p>
-          )}
+          <AnimatePresence>
+            {isLoading && (
+              <motion.div 
+                className="flex justify-center mt-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Loader2 className="w-8 h-8 text-white animate-spin" />
+              </motion.div>
+            )}
+            {error && (
+              <motion.p 
+                className="text-center mt-4 text-red-500 bg-white bg-opacity-80 p-4 rounded-lg"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {error}
+              </motion.p>
+            )}
+            {searchCriteria && !isLoading && !error && (
+              <motion.div 
+                className="mt-4 p-4 bg-white bg-opacity-80 rounded-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <h2 className="text-xl font-semibold mb-2">Search Criteria:</h2>
+                <pre className="whitespace-pre-wrap">{searchCriteria}</pre>
+              </motion.div>
+            )}
+            {searchResults && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <h2 className="text-2xl font-bold mt-8 mb-4 text-white">Supabase Results</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {renderResults(searchResults.dbResults)}
+                </div>
+                <h2 className="text-2xl font-bold mt-8 mb-4 text-white">OpenAI Results</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {renderResults(searchResults.aiResults)}
+                </div>
+              </motion.div>
+            )}
+            {searchResults && searchResults.dbResults.length === 0 && searchResults.aiResults.length === 0 && !isLoading && !error && (
+              <motion.p 
+                className="text-center mt-4 text-white bg-black bg-opacity-50 p-4 rounded-lg"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                No results found. Try adjusting your search criteria.
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
