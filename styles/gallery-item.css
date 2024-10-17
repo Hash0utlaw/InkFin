@@ -1,0 +1,6 @@
+.gallery-item-background {
+  background-image: url('/images/tattoo-shop-background.jpg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}

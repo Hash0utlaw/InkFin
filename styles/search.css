@@ -1,0 +1,6 @@
+.search-background {
+  background-image: url('/images/search-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}

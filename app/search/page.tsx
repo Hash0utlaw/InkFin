@@ -7,6 +7,7 @@ import ArtistCard, { Artist } from '@/components/ArtistCard'
 import ShopCard, { Shop } from '@/components/ShopCard'
 import { Database } from '@/lib/database.types'
 import { Loader2 } from 'lucide-react'
+import '@/styles/search.css'  // Add this import at the top of the file
 
 type BusinessData = Database['public']['Tables']['business_data']['Row']
 
@@ -195,7 +196,7 @@ export default function SearchPage() {
   const titleWords = "Search Tattoo Artists and Shops".split(" ")
 
   return (
-    <div className="min-h-screen bg-cover bg-center bg-fixed" style={{ backgroundImage: "url('/images/search-background.jpg')" }}>
+    <div className="min-h-screen search-background">
       <div className="bg-black bg-opacity-50 min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <motion.h1 

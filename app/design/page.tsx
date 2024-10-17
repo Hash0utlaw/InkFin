@@ -4,10 +4,11 @@ import React from 'react'
 import TattooDesignGenerator from '@/components/TattooDesignGenerator'
 import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
+import '@/styles/design.css';
 
 export default function DesignPage() {
   return (
-    <div className="min-h-screen bg-cover bg-center bg-fixed relative overflow-hidden" style={{ backgroundImage: "url('/images/design-background.jpg.png')" }}>
+    <div className="min-h-screen bg-cover bg-center bg-fixed relative overflow-hidden design-background">
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/70 to-pink-600/70 mix-blend-overlay"></div>
       <div className="relative z-10 min-h-screen">
         <main className="container mx-auto px-4 py-16">

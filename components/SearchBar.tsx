@@ -79,7 +79,9 @@ export default function SearchBar({ onSearch, onError }: SearchBarProps) {
             checked={searchType === 'general'}
             onChange={() => setSearchType('general')}
             className="form-radio text-purple-500 hidden"
+            id="general-search"
           />
+          <label htmlFor="general-search" className="sr-only">General Search</label>
           <MapPin className="w-5 h-5" />
           <span>General Search</span>
         </motion.label>
@@ -96,7 +98,9 @@ export default function SearchBar({ onSearch, onError }: SearchBarProps) {
             checked={searchType === 'ai'}
             onChange={() => setSearchType('ai')}
             className="form-radio text-purple-500 hidden"
+            id="ai-search"
           />
+          <label htmlFor="ai-search" className="sr-only">AI Search</label>
           <Zap className="w-5 h-5" />
           <span>AI Search</span>
         </motion.label>

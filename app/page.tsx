@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, useAnimation, useInView } from 'framer-motion'
 import { ArrowRight, Search, Palette } from 'lucide-react'
+import styles from '../styles/Home.module.css'
 
 const titleText = "Welcome to InkFinder"
 
@@ -56,7 +57,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-cover bg-center relative overflow-hidden" style={{ backgroundImage: "url('/images/home-background.jpg.png')" }}>
+    <main className={`min-h-screen bg-cover bg-center relative overflow-hidden ${styles.mainBackground}`}>
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/40 backdrop-blur-sm"></div>
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 text-white">
         <motion.h1 
