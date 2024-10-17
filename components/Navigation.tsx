@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Home, Search, Users, Store, Palette, Image, Info, LogIn, UserPlus } from 'lucide-react'
+import { Menu, X, Home, Search, Users, User, Store, Palette, Image, Info, LogIn, UserPlus, UserCircle } from 'lucide-react'
 import SignOutButton from './SignOutButton'
 import ThemeToggle from './ThemeToggle'
 
 const menuItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/search', label: 'Search', icon: Search },
+  { href: '/profile', label: 'My Profile', icon: UserCircle },
   { href: '/artist', label: 'Artists', icon: Users },
   { href: '/shop', label: 'Shops', icon: Store },
   { href: '/design', label: 'Design', icon: Palette },

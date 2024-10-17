@@ -11,8 +11,70 @@ import { Loader2 } from 'lucide-react'
 type BusinessData = Database['public']['Tables']['business_data']['Row']
 
 interface SearchResults {
-  dbResults: BusinessData[]
-  aiResults: any[]
+  results: (BusinessData | any)[]
+  totalCount: number
+  page: number
+  limit: number
+  searchType: 'general' | 'ai'
+}
+
+const SearchResultsContent = ({ 
+  isLoading, 
+  error, 
+  searchCriteria, 
+  searchResults, 
+  renderResults 
+}: {
+  isLoading: boolean
+  error: string | null
+  searchCriteria: string | null
+  searchResults: SearchResults | null
+  renderResults: (results: (BusinessData | any)[], searchType: 'general' | 'ai') => React.ReactNode
+}) => {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center mt-8">
+        <Loader2 className="w-8 h-8 text-white animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <p className="text-center mt-4 text-red-500 bg-white bg-opacity-80 p-4 rounded-lg">
+        {error}
+      </p>
+    )
+  }
+
+  if (searchCriteria && !searchResults) {
+    return (
+      <div className="mt-4 p-4 bg-white bg-opacity-80 rounded-lg">
+        <h2 className="text-xl font-semibold mb-2">Search Criteria:</h2>
+        <pre className="whitespace-pre-wrap">{searchCriteria}</pre>
+      </div>
+    )
+  }
+
+  if (searchResults) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mt-8 mb-4 text-white">
+          {searchResults.searchType === 'general' ? 'General Search Results' : 'AI Search Results'}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {renderResults(searchResults.results, searchResults.searchType)}
+        </div>
+        {searchResults.results.length === 0 && (
+          <p className="text-center mt-4 text-white bg-black bg-opacity-50 p-4 rounded-lg">
+            No results found. Try adjusting your search criteria.
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  return null
 }
 
 export default function SearchPage() {
@@ -21,20 +83,20 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchCriteria, setSearchCriteria] = useState<string | null>(null)
 
-  const handleSearch = useCallback(async (query: string, filters: SearchFilters, location: string) => {
+  const handleSearch = useCallback(async (searchTerm: string, filters: SearchFilters, searchType: 'general' | 'ai') => {
     setIsLoading(true)
     setError(null)
     setSearchResults(null)
-    setSearchCriteria(`Query: ${query}\nFilters: ${JSON.stringify(filters, null, 2)}\nLocation: ${location}`)
+    setSearchCriteria(`Search Type: ${searchType}\nTerm: ${searchTerm}\nFilters: ${JSON.stringify(filters, null, 2)}`)
 
     try {
-      console.log('Sending search request with:', { query, filters, location })
+      console.log('Sending search request with:', { searchTerm, filters, searchType })
       const response = await fetch('/api/hybrid-search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ searchTerm: query, filters, location }),
+        body: JSON.stringify({ searchTerm, filters, searchType }),
       })
 
       if (!response.ok) {
@@ -45,7 +107,7 @@ export default function SearchPage() {
       console.log('Raw API response:', data)
 
       setSearchResults(data)
-      if (data.dbResults.length === 0 && data.aiResults.length === 0) {
+      if (data.results.length === 0) {
         setError('No results found matching your criteria. Try adjusting your search.')
       }
     } catch (err) {
@@ -74,36 +136,51 @@ export default function SearchPage() {
     )
   }, [])
 
-  const mapToArtist = useCallback((data: BusinessData | any): Artist => ({
+  const mapToArtist = useCallback((data: BusinessData | any, searchType: 'general' | 'ai'): Artist => ({
+    id: data.id || Math.random().toString(36).substr(2, 9),
     name: data.Name || data.name,
     type: 'artist',
-    location: data.Address || data.location,
+    location: searchType === 'general' ? (data.clean_address || data.State || '') : (data.location || ''),
     priceRange: data.Rating ? `${data.Rating.toFixed(1)}/5` : (data.priceRange || 'N/A'),
-    image: '/images/placeholder-artist.jpg.png',
+    image: '/images/placeholder-artist.jpg',
     style: data.Types || data.style || 'Unknown',
+    Phone: data.Phone,
+    Website: data.Website,
+    Email: data.Email,
+    Rating: data.Rating,
+    Reviews: data.Reviews,
+    clean_address: data.clean_address,
+    State: data.State
   }), [])
 
-  const mapToShop = useCallback((data: BusinessData | any): Shop => ({
+  const mapToShop = useCallback((data: BusinessData | any, searchType: 'general' | 'ai'): Shop => ({
+    id: data.id || Math.random().toString(36).substr(2, 9),
     name: data.Name || data.name,
     type: 'shop',
-    location: data.Address || data.location,
+    location: searchType === 'general' ? (data.clean_address || data.State || '') : (data.location || ''),
     priceRange: data.Rating ? `${data.Rating.toFixed(1)}/5` : (data.priceRange || 'N/A'),
-    image: '/images/placeholder-artist.jpg.png',
+    image: '/images/placeholder-artist.jpg',
     style: data.Types || data.style || 'Unknown',
+    Phone: data.Phone,
+    Website: data.Website,
+    Email: data.Email,
+    Rating: data.Rating,
+    Reviews: data.Reviews,
+    clean_address: data.clean_address,
+    State: data.State
   }), [])
 
-  const renderResults = useCallback((results: BusinessData[] | any[]) => {
+  const renderResults = useCallback((results: (BusinessData | any)[], searchType: 'general' | 'ai') => {
     return results.map((result, index) => {
       console.log('Processing result:', result)
       try {
         if (isArtist(result)) {
-          const artistData = mapToArtist(result)
+          const artistData = mapToArtist(result, searchType)
           console.log('Mapped artist data:', artistData)
-          return <ArtistCard key={result.id || index} artist={artistData} />
+          return <ArtistCard key={artistData.id || `artist-${index}`} artist={artistData} searchType={searchType === 'ai' ? 'location' : 'general'} />
         } else if (isShop(result)) {
-          const shopData = mapToShop(result)
-          console.log('Mapped shop data:', shopData)
-          return <ShopCard key={result.id || index} shop={shopData} />
+          const shopData = mapToShop(result, searchType)
+          return <ShopCard key={shopData.id || `shop-${index}`} shop={shopData} searchType={searchType === 'ai' ? 'location' : 'general'} />
         } else {
           console.log('Result is neither artist nor shop:', result)
           return null
@@ -118,7 +195,7 @@ export default function SearchPage() {
   const titleWords = "Search Tattoo Artists and Shops".split(" ")
 
   return (
-    <div className="min-h-screen bg-cover bg-center bg-fixed" style={{ backgroundImage: "url('/images/search-background.jpg.png')" }}>
+    <div className="min-h-screen bg-cover bg-center bg-fixed" style={{ backgroundImage: "url('/images/search-background.jpg')" }}>
       <div className="bg-black bg-opacity-50 min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <motion.h1 
@@ -137,7 +214,7 @@ export default function SearchPage() {
           >
             {titleWords.map((word, index) => (
               <motion.span
-                key={index}
+                key={`title-word-${index}`}
                 className="inline-block mr-2"
                 variants={{
                   hidden: { opacity: 0, y: 20 },
@@ -165,64 +242,22 @@ export default function SearchPage() {
           >
             <SearchBar onSearch={handleSearch} onError={setError} />
           </motion.div>
-          <AnimatePresence>
-            {isLoading && (
-              <motion.div 
-                className="flex justify-center mt-8"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <Loader2 className="w-8 h-8 text-white animate-spin" />
-              </motion.div>
-            )}
-            {error && (
-              <motion.p 
-                className="text-center mt-4 text-red-500 bg-white bg-opacity-80 p-4 rounded-lg"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {error}
-              </motion.p>
-            )}
-            {searchCriteria && !isLoading && !error && (
-              <motion.div 
-                className="mt-4 p-4 bg-white bg-opacity-80 rounded-lg"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <h2 className="text-xl font-semibold mb-2">Search Criteria:</h2>
-                <pre className="whitespace-pre-wrap">{searchCriteria}</pre>
-              </motion.div>
-            )}
-            {searchResults && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                <h2 className="text-2xl font-bold mt-8 mb-4 text-white">Supabase Results</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {renderResults(searchResults.dbResults)}
-                </div>
-                <h2 className="text-2xl font-bold mt-8 mb-4 text-white">OpenAI Results</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {renderResults(searchResults.aiResults)}
-                </div>
-              </motion.div>
-            )}
-            {searchResults && searchResults.dbResults.length === 0 && searchResults.aiResults.length === 0 && !isLoading && !error && (
-              <motion.p 
-                className="text-center mt-4 text-white bg-black bg-opacity-50 p-4 rounded-lg"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                No results found. Try adjusting your search criteria.
-              </motion.p>
-            )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={isLoading ? 'loading' : error ? 'error' : searchResults ? 'results' : 'criteria'}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <SearchResultsContent
+                isLoading={isLoading}
+                error={error}
+                searchCriteria={searchCriteria}
+                searchResults={searchResults}
+                renderResults={renderResults}
+              />
+            </motion.div>
           </AnimatePresence>
         </div>
       </div>

@@ -2,18 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ArtistForm from '@/components/ArtistForm';
+import ShopForm from '@/components/ShopForm';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/lib/database.types';
 
-type Artist = Database['public']['Tables']['artists']['Row'];
+type Shop = Database['public']['Tables']['shops']['Row'];
 
-export default function CreateArtistPage() {
+export default function CreateShopPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClientComponentClient<Database>();
 
-  const handleCreate = async (data: Partial<Artist>) => {
+  const handleCreate = async (data: Partial<Shop>) => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -21,16 +21,16 @@ export default function CreateArtistPage() {
       return;
     }
 
-    const { data: newArtist, error } = await supabase
-      .from('artists')
+    const { data: newShop, error } = await supabase
+      .from('shops')
       .insert({ ...data, user_id: user.id })
       .select()
       .single();
 
     if (error) {
       setError(error.message);
-    } else if (newArtist) {
-      router.push(`/artist/${newArtist.id}`);
+    } else if (newShop) {
+      router.push(`/shop/${newShop.id}`);
     }
   };
 
@@ -38,8 +38,8 @@ export default function CreateArtistPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Create Artist Profile</h1>
-      <ArtistForm onSubmit={handleCreate} />
+      <h1 className="text-3xl font-bold mb-8">Create Shop Profile</h1>
+      <ShopForm onSubmit={handleCreate} />
     </div>
   );
 }
