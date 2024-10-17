@@ -173,7 +173,7 @@ export interface Database {
         Row: {
           id: string
           Name: string
-          Address: string
+          clean_address: string
           Phone: string | null
           Website: string | null
           Email: string | null
@@ -187,7 +187,7 @@ export interface Database {
         Insert: {
           id?: string
           Name: string
-          Address: string
+          clean_address: string
           Phone?: string | null
           Website?: string | null
           Email?: string | null
@@ -201,7 +201,7 @@ export interface Database {
         Update: {
           id?: string
           Name?: string
-          Address?: string
+          clean_address?: string
           Phone?: string | null
           Website?: string | null
           Email?: string | null
