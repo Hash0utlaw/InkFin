@@ -1,7 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Phone, Globe, MapPin, Star, Palette } from 'lucide-react'
+import { Phone, Globe, MapPin, Star, Palette, Clock, Award, Mail, Instagram, Facebook, Twitter } from 'lucide-react'
 
 export interface Artist {
   id: number
@@ -18,7 +18,21 @@ export interface Artist {
   Reviews?: number
   clean_address?: string
   State?: string
+  experience?: string
+  specialties?: string[]
+  portfolio?: string
+  instagram?: string
+  facebook?: string
+  twitter?: string
 }
+
+// Helper function to ensure URL has a protocol
+const ensureHttps = (url: string): string => {
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return `https://${url}`;
+  }
+  return url;
+};
 
 export default function ArtistCard({ artist, searchType }: { artist: Artist, searchType: 'location' | 'general' }) {
   return (
@@ -81,15 +95,48 @@ export default function ArtistCard({ artist, searchType }: { artist: Artist, sea
         >
           Price Range: <span className="text-green-400">{artist.priceRange}</span>
         </motion.p>
-        {artist.Phone && (
+        {artist.experience && (
           <motion.p 
             className="text-gray-300 flex items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
+            <Clock size={16} className="mr-2 text-blue-500" />
+            Experience: {artist.experience}
+          </motion.p>
+        )}
+        {artist.specialties && artist.specialties.length > 0 && (
+          <motion.p 
+            className="text-gray-300 flex items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+          >
+            <Award size={16} className="mr-2 text-indigo-500" />
+            Specialties: {artist.specialties.join(', ')}
+          </motion.p>
+        )}
+        {artist.Phone && (
+          <motion.p 
+            className="text-gray-300 flex items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+          >
             <Phone size={16} className="mr-2 text-blue-500" />
             <a href={`tel:${artist.Phone}`} className="hover:text-blue-400 transition-colors">{artist.Phone}</a>
+          </motion.p>
+        )}
+        {artist.Email && (
+          <motion.p 
+            className="text-gray-300 flex items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+          >
+            <Mail size={16} className="mr-2 text-teal-500" />
+            <a href={`mailto:${artist.Email}`} className="hover:text-teal-400 transition-colors">{artist.Email}</a>
           </motion.p>
         )}
         {artist.Website && (
@@ -97,22 +144,64 @@ export default function ArtistCard({ artist, searchType }: { artist: Artist, sea
             className="text-gray-300 flex items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
+            transition={{ delay: 1.0 }}
           >
             <Globe size={16} className="mr-2 text-indigo-500" />
-            <a href={artist.Website} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
+            <a href={ensureHttps(artist.Website)} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
               Visit Website
             </a>
           </motion.p>
         )}
-        {artist.Email && (
+        {artist.portfolio && (
           <motion.p 
-            className="text-gray-300"
+            className="text-gray-300 flex items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 1.1 }}
           >
-            Email: <span className="text-teal-400">{artist.Email}</span>
+            <Globe size={16} className="mr-2 text-pink-500" />
+            <a href={ensureHttps(artist.portfolio)} target="_blank" rel="noopener noreferrer" className="hover:text-pink-400 transition-colors">
+              View Portfolio
+            </a>
+          </motion.p>
+        )}
+        {artist.instagram && (
+          <motion.p 
+            className="text-gray-300 flex items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+          >
+            <Instagram size={16} className="mr-2 text-pink-500" />
+            <a href={`https://instagram.com/${artist.instagram}`} target="_blank" rel="noopener noreferrer" className="hover:text-pink-400 transition-colors">
+              @{artist.instagram}
+            </a>
+          </motion.p>
+        )}
+        {artist.facebook && (
+          <motion.p 
+            className="text-gray-300 flex items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.3 }}
+          >
+            <Facebook size={16} className="mr-2 text-blue-600" />
+            <a href={`https://facebook.com/${artist.facebook}`} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
+              Facebook
+            </a>
+          </motion.p>
+        )}
+        {artist.twitter && (
+          <motion.p 
+            className="text-gray-300 flex items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4 }}
+          >
+            <Twitter size={16} className="mr-2 text-sky-500" />
+            <a href={`https://twitter.com/${artist.twitter}`} target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors">
+              @{artist.twitter}
+            </a>
           </motion.p>
         )}
       </div>

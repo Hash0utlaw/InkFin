@@ -145,13 +145,19 @@ export default function SearchPage() {
     priceRange: data.Rating ? `${data.Rating.toFixed(1)}/5` : (data.priceRange || 'N/A'),
     image: '/images/placeholder-artist.jpg',
     style: data.Types || data.style || 'Unknown',
-    Phone: data.Phone,
-    Website: data.Website,
-    Email: data.Email,
+    Phone: data.Phone || data.phone,
+    Website: data.Website || data.website,
+    Email: data.Email || data.email,
     Rating: data.Rating,
     Reviews: data.Reviews,
     clean_address: data.clean_address,
-    State: data.State
+    State: data.State,
+    experience: data.experience,
+    specialties: data.specialties,
+    portfolio: data.portfolio,
+    instagram: data.instagram,
+    facebook: data.facebook,
+    twitter: data.twitter
   }), [])
 
   const mapToShop = useCallback((data: BusinessData | any, searchType: 'general' | 'ai'): Shop => ({
@@ -162,13 +168,18 @@ export default function SearchPage() {
     priceRange: data.Rating ? `${data.Rating.toFixed(1)}/5` : (data.priceRange || 'N/A'),
     image: '/images/placeholder-artist.jpg',
     style: data.Types || data.style || 'Unknown',
-    Phone: data.Phone,
-    Website: data.Website,
-    Email: data.Email,
+    Phone: data.Phone || data.phone,
+    Website: data.Website || data.website,
+    Email: data.Email || data.email,
     Rating: data.Rating,
     Reviews: data.Reviews,
     clean_address: data.clean_address,
-    State: data.State
+    State: data.State,
+    services: data.services,
+    artistCount: data.artistCount,
+    instagram: data.instagram,
+    facebook: data.facebook,
+    twitter: data.twitter
   }), [])
 
   const renderResults = useCallback((results: (BusinessData | any)[], searchType: 'general' | 'ai') => {

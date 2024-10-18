@@ -4,7 +4,7 @@ import React from 'react'
 import TattooDesignGenerator from '@/components/TattooDesignGenerator'
 import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
-import '@/styles/design.css';
+
 
 export default function DesignPage() {
   return (

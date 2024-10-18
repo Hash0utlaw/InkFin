@@ -11,6 +11,15 @@ export interface Artist {
   style?: string;
   location: string;
   priceRange: string;
+  experience?: string;
+  specialties?: string[];
+  portfolio?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  twitter?: string;
 }
 
 export interface Shop {
@@ -18,6 +27,15 @@ export interface Shop {
   type: 'shop';
   location: string;
   priceRange: string;
+  services?: string[];
+  artistCount?: number;
+  rating?: number;
+  phone?: string;
+  email?: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  twitter?: string;
 }
 
 export interface SearchResult {
@@ -30,6 +48,8 @@ export interface SearchFilters {
   priceRange: string;
   location: string;
   style: string;
+  experience?: string;
+  rating?: number;
 }
 
 export async function searchTattooArtistsAndShops(query: string, filters: SearchFilters): Promise<SearchResult> {
@@ -44,15 +64,45 @@ export async function searchTattooArtistsAndShops(query: string, filters: Search
     const response = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
-        {role: "system", content: `You are a helpful assistant that finds tattoo artists and shops based on specific criteria. Always respond with a JSON array of objects, where each object represents an artist or shop with 'name', 'type' (either 'artist' or 'shop'), 'style' (for artists only), 'location', and 'priceRange' properties. If you can't provide results, respond with an empty array [].`},
-        {role: "user", content: `Based on the following criteria, suggest tattoo artists and/or shops:
-Query: ${query}
-Type: ${filters.type}
-Price Range: ${filters.priceRange}
-Location: ${filters.location}
-Style: ${filters.style}
-Provide up to 5 results that best match these criteria. If no exact matches are found, suggest similar alternatives.`}
+        {
+          role: "system",
+          content: `You are an AI assistant specializing in finding tattoo artists and shops based on specific criteria. Respond with a JSON array of objects, where each object represents an artist or shop with the following properties:
+          - name: string
+          - type: 'artist' or 'shop'
+          - style: string (for artists only)
+          - location: string
+          - priceRange: string
+          - experience: string (for artists only)
+          - specialties: string[] (for artists only)
+          - portfolio: string (URL, for artists only)
+          - services: string[] (for shops only)
+          - artistCount: number (for shops only)
+          - rating: number (1-5 scale, for shops only)
+          - phone: string
+          - email: string
+          - website: string
+          - instagram: string
+          - facebook: string
+          - twitter: string
+          
+          Provide detailed and realistic results, including plausible contact information. If no exact matches are found, suggest similar alternatives that best fit the criteria.`
+        },
+        {
+          role: "user",
+          content: `Based on the following criteria, suggest tattoo artists and/or shops:
+          Query: ${query}
+          Type: ${filters.type}
+          Price Range: ${filters.priceRange}
+          Location: ${filters.location}
+          Style: ${filters.style}
+          Experience: ${filters.experience || 'Any'}
+          Minimum Rating: ${filters.rating || 'Any'}
+          
+          Provide up to 8 results that best match these criteria. Ensure the results are diverse and cater to different aspects of the search criteria. Include realistic contact information for each result.`
+        }
       ],
+      temperature: 0.7,
+      max_tokens: 1500,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -75,7 +125,6 @@ Provide up to 5 results that best match these criteria. If no exact matches are 
 
 function parseOpenAIResponse(content: string): (Artist | Shop)[] {
   try {
-    // Clean the content before parsing
     const cleanedContent = content.replace(/\n/g, '').replace(/\r/g, '').replace(/\t/g, '');
     const parsedContent = JSON.parse(cleanedContent);
 
@@ -87,7 +136,6 @@ function parseOpenAIResponse(content: string): (Artist | Shop)[] {
     }
   } catch (parseError) {
     console.error('Error parsing OpenAI response:', parseError);
-    // Attempt to clean and parse the response manually
     const manuallyParsed = content.match(/\{[^}]+\}/g);
     if (manuallyParsed) {
       return manuallyParsed.map(item => {
@@ -105,46 +153,21 @@ function parseOpenAIResponse(content: string): (Artist | Shop)[] {
 }
 
 function isValidResult(item: any): item is Artist | Shop {
-  return (
-    item &&
-    typeof item === 'object' &&
-    'name' in item &&
-    'type' in item &&
-    'location' in item &&
-    'priceRange' in item &&
-    (item.type === 'artist' || item.type === 'shop')
-  );
-}
-
-export async function generateTattooDesign(prompt: string): Promise<{ imageUrl: string; error?: string }> {
-  const cacheKey = `design:${prompt}`;
-  const cachedResult = getCache(cacheKey);
-
-  if (cachedResult) {
-    return cachedResult as { imageUrl: string; error?: string };
-  }
-
-  try {
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: `Tattoo design: ${prompt}`,
-      n: 1,
-      size: "1024x1024",
-      quality: "standard",
-      style: "vivid",
-    });
-
-    const imageUrl = response.data[0]?.url;
-
-    if (!imageUrl) {
-      throw new Error("No image URL in the response");
+  if (item && typeof item === 'object' && 'name' in item && 'type' in item && 'location' in item && 'priceRange' in item) {
+    if (item.type === 'artist') {
+      return (
+        'style' in item &&
+        (!('experience' in item) || typeof item.experience === 'string') &&
+        (!('specialties' in item) || Array.isArray(item.specialties)) &&
+        (!('portfolio' in item) || typeof item.portfolio === 'string')
+      );
+    } else if (item.type === 'shop') {
+      return (
+        (!('services' in item) || Array.isArray(item.services)) &&
+        (!('artistCount' in item) || typeof item.artistCount === 'number') &&
+        (!('rating' in item) || (typeof item.rating === 'number' && item.rating >= 1 && item.rating <= 5))
+      );
     }
-
-    const result = { imageUrl };
-    setCache(cacheKey, result);
-    return result;
-  } catch (error) {
-    console.error("Error generating tattoo design:", error);
-    return { imageUrl: "", error: "Failed to generate tattoo design. Please try again." };
   }
+  return false;
 }
