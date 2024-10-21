@@ -98,7 +98,7 @@ export async function searchTattooArtistsAndShops(query: string, filters: Search
           Experience: ${filters.experience || 'Any'}
           Minimum Rating: ${filters.rating || 'Any'}
           
-          Provide up to 8 results that best match these criteria. Ensure the results are diverse and cater to different aspects of the search criteria. Include realistic contact information for each result.`
+          Provide up to 10 results that best match these criteria. Ensure the results are diverse and cater to different aspects of the search criteria. Include realistic contact information for each result.`
         }
       ],
       temperature: 0.7,
