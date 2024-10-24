@@ -7,7 +7,7 @@ import ArtistCard, { Artist } from '@/components/ArtistCard'
 import ShopCard, { Shop } from '@/components/ShopCard'
 import { Database } from '@/lib/database.types'
 import { Loader2 } from 'lucide-react'
-import '@/styles/search.css'  // Add this import at the top of the file
+import '@/styles/search.css'
 
 type BusinessData = Database['public']['Tables']['business_data']['Row']
 
@@ -209,7 +209,7 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen search-background">
       <div className="bg-black bg-opacity-50 min-h-screen">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-24"> {/* Increased top padding to move content down */}
           <motion.h1 
             className="text-5xl md:text-6xl font-bold text-center mb-8 relative overflow-hidden"
             initial="hidden"
@@ -247,13 +247,16 @@ export default function SearchPage() {
               </motion.span>
             ))}
           </motion.h1>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
+            className="mb-12"
           >
             <SearchBar onSearch={handleSearch} onError={setError} />
           </motion.div>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={isLoading ? 'loading' : error ? 'error' : searchResults ? 'results' : 'criteria'}

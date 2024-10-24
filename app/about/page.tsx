@@ -17,7 +17,7 @@ export default function AboutPage() {
   const fadeInUpTransition = { duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }
 
   return (
-    <div className="min-h-screen bg-black text-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-200">
       <div className="container mx-auto px-4 py-16">
         <motion.h1 
           className="text-5xl md:text-7xl font-bold mb-12 text-center"
@@ -25,7 +25,7 @@ export default function AboutPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 animate-gradient-x">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 animate-gradient-x">
             About InkFinder
           </span>
         </motion.h1>
@@ -70,7 +70,7 @@ export default function AboutPage() {
           className="text-3xl md:text-5xl font-bold mt-16 mb-8 text-center"
           variants={fadeInUp}
         >
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-yellow-500">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
             Our Mission
           </span>
         </motion.h2>
@@ -94,8 +94,8 @@ export default function AboutPage() {
           ].map((item, index) => (
             <motion.div 
               key={index}
-              className="bg-gray-900 p-6 rounded-lg shadow-lg border border-red-500"
-              whileHover={{ scale: 1.05, borderColor: "#FFD700" }}
+              className="bg-gray-800 p-6 rounded-lg shadow-lg border border-purple-500"
+              whileHover={{ scale: 1.05, borderColor: "#ff69b4" }}
               whileTap={{ scale: 0.95 }}
             >
               <motion.div
@@ -103,10 +103,10 @@ export default function AboutPage() {
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.6 }}
               >
-                <item.icon className="w-12 h-12 mb-4 text-yellow-500" />
+                <item.icon className="w-12 h-12 mb-4 text-pink-500" />
               </motion.div>
-              <h3 className="text-xl font-semibold mb-2 text-red-400">{item.title}</h3>
-              <p className="text-gray-400">{item.description}</p>
+              <h3 className="text-xl font-semibold mb-2 text-purple-400">{item.title}</h3>
+              <p className="text-gray-300">{item.description}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -121,7 +121,7 @@ export default function AboutPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
           >
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-yellow-500 to-red-500">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
               Join the InkFinder Revolution
             </span>
           </motion.h2>
@@ -134,8 +134,8 @@ export default function AboutPage() {
             Be part of a community that&apos;s redefining the future of tattoo art.
           </motion.p>
           <motion.button 
-            className="bg-gradient-to-r from-red-600 to-yellow-500 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg hover:shadow-xl transition duration-300"
-            whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(255, 215, 0, 0.5)" }}
+            className="bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg hover:shadow-xl transition duration-300"
+            whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(255, 105, 180, 0.5)" }}
             whileTap={{ scale: 0.95 }}
           >
             Get Started Today
