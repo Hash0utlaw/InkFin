@@ -124,7 +124,7 @@ export async function POST(request: Request) {
   const startTime = Date.now();
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies });
-    const { searchTerm, filters, searchType, page = 1, limit = 10 } = await request.json();
+    const { searchTerm, filters, searchType, page = 1, limit = 100 } = await request.json();
 
     console.log('Received search request:', { searchTerm, filters, searchType, page, limit });
 
